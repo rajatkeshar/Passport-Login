@@ -11,13 +11,13 @@
         <nav>
           <ul class="nav nav-pills pull-right">
 			{{#if user}}
-				<div class="col-lg-6">{{user}}</div>
 				<li role="presentation"><a href="/">Dashboard</a></li>
 				<li role="presentation"><a href="/users/logout">Logout</a></li>
 			{{else}}
 				<li role="presentation"><a href="/users/login">Login</a></li>
 				<li role="presentation"><a href="/users/register">Register</a></li>
-				<li role="presentation" class="btn btn-primary"><a href="/users/auth/facebook"><span class="fa facebook">Facebook</span></a></li>
+				<li role="presentation"><a href="/users/auth/facebook" class="btn btn-primary"><span class="fa fa-facebook">Facebook</span></a></li>
+				<li role="presentation"><a href="/users/auth/Google" class="btn btn-danger"><span class="fa fa-google-plus">Google</span></a></li>
           	{{/if}}
 		  </ul>
         </nav>
@@ -37,6 +37,14 @@
 		  {{/if}}
 		  
 		  {{{body}}}
+		  <div class="col-lg-12">
+			  {{#if user.google.avtar}}
+				<img src="{{user.google.avtar}}"></img>
+			  {{else if user.facebook.avtar}}
+			  	<img src="{{user.facebook.avtar}}"></img>
+			  {{/if}}
+		  </div>
+		  <div class="col-lg-6">{{user}}</div>
         </div>
       </div>
 

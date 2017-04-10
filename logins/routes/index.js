@@ -1,6 +1,5 @@
 var express = require('express');
 var passport = require('passport');
-var Registration = require('../login.model');
 var router = express.Router();
 
 

@@ -11,6 +11,7 @@ var LocalStrategy = require('passport-local').Strategy;
 var mongoose = require('mongoose');
 var mongo = require('mongodb');
 var FacebookStrategy = require('passport-facebook');
+var MongoStore = require('connect-mongo')(session);
 var configAuth = require('./config/auth');
 
 mongoose.connect("mongodb://localhost/login");
@@ -38,7 +39,9 @@ app.use(express.static(__dirname +'/public'));
 app.use(session({
 	secret: 'secret',
 	saveUninitialized: true,
-	resave: true
+	resave: true,
+	store: new MongoStore({mongooseConnection: db}),
+	ttl: 2 * 24 * 60 * 60
 }));
 
 // Initialize passport
@@ -65,6 +68,13 @@ app.use(expressValidator({
 
 //connect flash
 app.use(flash());
+
+app.use(function(req, res, next) {
+	console.log("req.session: " +JSON.stringify(req.session));
+	console.log("+++++++++++++++++++++++++++++++");
+	console.log("req.user : " +req.user);
+	next();
+});
 
 //Global vars
 app.use(function(req, res, next) {

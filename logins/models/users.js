@@ -33,6 +33,27 @@ var UserSchema  = new Schema({
 		},
 		name: { 
 			type: String
+		},
+		avtar: {
+			type: String	
+		}
+	},
+	
+	google: {
+		id: {
+			type: String
+		},
+		token: {
+			type: String
+		},
+		email: {
+			type: String
+		},
+		name: { 
+			type: String
+		},
+		avtar: {
+			type: String	
 		}
 	}
 });
@@ -54,6 +75,11 @@ module.exports.getUserByUsername = function(username, callback) {
 
 module.exports.getUserFacebookById = function(id, callback) {
 	var query = {"facebook.id": id};
+	User.findOne(query, callback);
+}
+
+module.exports.getUserGoogleById = function(id, callback) {
+	var query = {"google.id": id};
 	User.findOne(query, callback);
 }
 

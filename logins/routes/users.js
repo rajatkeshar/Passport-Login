@@ -4,6 +4,7 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var User = require('../models/users');
 var FacebookStrategy = require('passport-facebook').Strategy;
+var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 var configAuth = require('../config/auth');
 
 
@@ -106,21 +107,24 @@ router.get('/logout', function(req, res) {
 passport.use(new FacebookStrategy({
     clientID: configAuth.facebookAuth.clientId,
     clientSecret: configAuth.facebookAuth.clientSecret,
-    callbackURL: configAuth.facebookAuth.callbackURL
+    callbackURL: configAuth.facebookAuth.callbackURL,
+	profileFields: ['id', 'displayName', 'photos', 'email']
   },
-  function(accessToken, refreshToken, profile, done) { console.log("profile.id : " +profile.id);
+  function(accessToken, refreshToken, profile, done) { 
     process.nextTick(function() {
-		User.getUserFacebookById(profile.id, function(err, user) {
+		User.getUserFacebookById(profile.id, function(err, user) { 
 			if(err)
-				return done(err);
+				return done(err);  
 			if(user)
-				return done(null, user);
+				return done(null, user); 
 			else {
 				var newUser = new User();
 				newUser.facebook.id = profile.id;
-				newUser.facebook.name = profile.name.givenName + " " +profile.name.familyName ;
-				newUser.facebook.email = profile.email;
+				newUser.facebook.name = profile.displayName; //.givenName + " " +profile.name.familyName ;
+				newUser.facebook.email = profile.emails[0].value;
+				newUser.facebook.avtar = profile.photos[0].value;
 				newUser.facebook.token = accessToken;
+				console.log("newUser.facebook.id : " +newUser.facebook.id);
 				newUser.save(function(err) {
 					if(err)
 						return err;
@@ -138,6 +142,48 @@ router.get('/auth/facebook', passport.authenticate('facebook', {scope: ['email']
 
 router.get('/auth/facebook/callback',
   passport.authenticate('facebook', { successRedirect: '/',
+                                      failureRedirect: '/users/login' }));
+
+//google strategy
+passport.use(new GoogleStrategy({
+    clientID: configAuth.googleAuth.clientId,
+    clientSecret: configAuth.googleAuth.clientSecret,
+    callbackURL: configAuth.googleAuth.callbackURL
+  },
+  function(accessToken, refreshToken, profile, done) { 
+  console.log("profile.image.url : " +profile.photos[0].value);
+  console.log("profile : " +JSON.stringify(profile));
+    process.nextTick(function() {
+		User.getUserGoogleById(profile.id, function(err, user) { 
+			if(err)
+				return done(err);  
+			if(user)
+				return done(null, user); 
+			else {
+				var newUser = new User();
+				newUser.google.id = profile.id;
+				newUser.google.name = profile.displayName; //.givenName + " " +profile.name.familyName ;
+				newUser.google.email = profile.emails[0].value;
+				newUser.google.token = accessToken;
+				newUser.google.avtar = profile.photos[0].value;
+				newUser.save(function(err) {
+					if(err)
+						return err;
+					else
+						return done(null, newUser);
+				});
+			}
+		});						  
+	});
+  }
+));
+
+
+//    /auth/google/callback
+router.get('/auth/google', passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/plus.login', 'https://www.googleapis.com/auth/plus.profile.emails.read'] }));
+
+router.get('/auth/google/callback',
+  passport.authenticate('google', { successRedirect: '/',
                                       failureRedirect: '/users/login' }));
 
 module.exports = router;
